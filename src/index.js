@@ -46,7 +46,7 @@ const BookList = () => {
 }
 
 const newFunc = (param) => {
-
+ console.log(param)
 }
 
 //component
