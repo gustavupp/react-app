@@ -1,48 +1,48 @@
 import React, { useEffect, useReducer, useState } from 'react'
 import Modal from './modal'
 
+const initialValue = {
+  people: [],
+  showAlert: false,
+  alertContent: ''
+}
+
 const reducer = (state, action) => {
-  switch(action.type) {
+  switch(action.type){
     case 'ADD_ITEM':
-      const newPeople = [...state.people, action.payload]
+      // const newPeople = [...state.people, action.payload];
       return {
-         ...state,
-          people: newPeople,
-          showModal: true,
-          modalContent: 'this works' 
-          };
-    case 'EMPTY':
-      return { 
-        ...state, 
-        people: [], 
-        showModal: true, 
-        modalContent: 'Empty Field' 
+        ...state,
+        people: [...state.people, {name: action.payload, toggle: false}],
+        showAlert: true,
+        alertContent: 'Item Added'
+      }
+    case 'CROSS_NAME':
+      return {
+        people: state.people.map((item, index) => {
+          return index === action.index ? { ...item, toggle: !item.toggle } : item
+        })
       };
-    default:
+    default :
       return state;
   }
-};
-
-const initialState = {
-  people: [],
-  showModal: false,
-  modalContent: ''
-};
+}
 
 function App() {
 const [name, setName] = useState('');
-const [state, dispatch] = useReducer(reducer, initialState)
+const [state, dispatch] = useReducer(reducer, initialValue);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (name) {
-      const newItem = {id: new Date().getTime(), name};
-      dispatch({type: 'ADD_ITEM', payload: newItem});
+    if (name){
+      //const newName = { id: new Date().getTime(), name };
+      dispatch({ type: 'ADD_ITEM', payload: name });
       setName('');
     } else {
-      dispatch({type: 'EMPTY'})
+      console.log('empty value')
     }
-  }
+    
+  } 
 
   return (
     <>
@@ -55,12 +55,17 @@ const [state, dispatch] = useReducer(reducer, initialState)
           <button type='submit'>Submit</button>
         </div>
         {
-          state.people.map((item) => <h2 key={item.id}>{item.name}</h2>)
+          state.people.map((item, index) => {
+          <h3 
+          style={{textDecoration: `${item.toggle && 'line-through'}`}} 
+          key={index} 
+          onClick={() => dispatch({ type:'CROSS_NAME', index })}>{item.name}</h3>
+        })
         }
       </form>
-    {
-      state.showModal && <Modal modalContent={state.modalContent} />
-    }
+        {
+          alert.show && <Modal content={alert.content} />
+        }
     </>
     )
 }

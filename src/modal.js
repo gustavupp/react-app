@@ -1,9 +1,10 @@
 import './modal.css'
 
-const Modal = ({ modalContent }) => {
+const Modal = ({content}) => {
+
     return (
         <div className='modal-div'>
-            <p>{modalContent}</p>
+            <p>{content}</p>
         </div>
         )
 }
