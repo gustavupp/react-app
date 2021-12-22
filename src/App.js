@@ -1,50 +1,67 @@
-import React, { useEffect } from 'react'
-import { useState } from 'react'
-import MainComponent from './MainComponent'
+import React, { useEffect, useReducer, useState } from 'react'
+import Modal from './modal'
+
+const reducer = (state, action) => {
+  switch(action.type) {
+    case 'ADD_ITEM':
+      const newPeople = [...state.people, action.payload]
+      return {
+         ...state,
+          people: newPeople,
+          showModal: true,
+          modalContent: 'this works' 
+          };
+    case 'EMPTY':
+      return { 
+        ...state, 
+        people: [], 
+        showModal: true, 
+        modalContent: 'Empty Field' 
+      };
+    default:
+      return state;
+  }
+};
+
+const initialState = {
+  people: [],
+  showModal: false,
+  modalContent: ''
+};
 
 function App() {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState([]);
+const [name, setName] = useState('');
+const [state, dispatch] = useReducer(reducer, initialState)
 
-  useEffect(()=> {
-    fetchData();
-  },[]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    const response = await fetch('https://course-api.com/react-tours-project');
-    const fetchedData =  await response.json();
-    setData(fetchedData)
-    setLoading(false);
-  }
-
-  function removeItem(id) {
-    const newData = data.filter((item) => item.id !== id);
-    setData(newData);
-  };
-
-  if (data.length === 0){
-    return (
-      <main>
-        <h1>No Tours Left</h1>
-        <button className='btn' onClick={()=> fetchData()}>Refresh</button>
-      </main>
-    )
-  }
-
-  if(loading){
-    return (
-      <main>
-        <h1>Loading...</h1>
-        </main>
-    )
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (name) {
+      const newItem = {id: new Date().getTime(), name};
+      dispatch({type: 'ADD_ITEM', payload: newItem});
+      setName('');
+    } else {
+      dispatch({type: 'EMPTY'})
+    }
   }
 
   return (
-    <main>
-      <h1>Our Tours</h1>
-      <MainComponent data={data} removeItem={removeItem} />
-    </main>
-  )
+    <>
+      <form action='submit' onSubmit={handleSubmit}>
+        <div className='form-container'>
+          <div className='wrapper'>
+            <label htmlFor='name'> Name: </label>
+            <input type='text' id='name' name='name' value={name} onChange={(e) => setName(e.target.value)}></input>
+          </div>
+          <button type='submit'>Submit</button>
+        </div>
+        {
+          state.people.map((item) => <h2 key={item.id}>{item.name}</h2>)
+        }
+      </form>
+    {
+      state.showModal && <Modal modalContent={state.modalContent} />
+    }
+    </>
+    )
 }
 export default App
