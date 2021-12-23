@@ -1,72 +1,68 @@
 import React, { useEffect, useReducer, useState } from 'react'
 import Modal from './modal'
 
-const initialValue = {
+const initialState = {
   people: [],
-  showAlert: false,
-  alertContent: ''
+  showAlert: false
 }
 
-const reducer = (state, action) => {
-  switch(action.type){
-    case 'ADD_ITEM':
-      // const newPeople = [...state.people, action.payload];
+function reducer(state, action) {
+ switch(action.type){
+   case 'UPDATE_NAME':
+     const updatedNames = [...state.people, { name: action.payload, toggle: false }];
+     return { ...state, people: updatedNames };
+
+    case 'DELETE':
+      const newNames = state.people.filter(( item, idx) => action.payload !== idx);
+      return { ...state, people: newNames }
+
+    case 'CROSS_OFF':
       return {
-        ...state,
-        people: [...state.people, {name: action.payload, toggle: false}],
-        showAlert: true,
-        alertContent: 'Item Added'
-      }
-    case 'CROSS_NAME':
-      return {
-        people: state.people.map((item, index) => {
-          return index === action.index ? { ...item, toggle: !item.toggle } : item
+        people: state.people.map((item, idx) => {
+          return idx === action.payload? {...item, toggle: !item.toggle }: item;
         })
       };
-    default :
-      return state;
-  }
+      
+    default:
+      throw new Error('something has gone south...');
+ } 
 }
 
 function App() {
+
+const [state, dispatch] = useReducer(reducer, initialState);
 const [name, setName] = useState('');
-const [state, dispatch] = useReducer(reducer, initialValue);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (name){
-      //const newName = { id: new Date().getTime(), name };
-      dispatch({ type: 'ADD_ITEM', payload: name });
-      setName('');
-    } else {
-      console.log('empty value')
-    }
-    
-  } 
+const handleSubmit = (e) => {
+   e.preventDefault();
+  if (name) {
+    dispatch({ type: 'UPDATE_NAME', payload: name });
+    setName('');
+  }
+}
 
-  return (
-    <>
-      <form action='submit' onSubmit={handleSubmit}>
-        <div className='form-container'>
-          <div className='wrapper'>
-            <label htmlFor='name'> Name: </label>
-            <input type='text' id='name' name='name' value={name} onChange={(e) => setName(e.target.value)}></input>
-          </div>
-          <button type='submit'>Submit</button>
-        </div>
-        {
-          state.people.map((item, index) => {
-          <h3 
-          style={{textDecoration: `${item.toggle && 'line-through'}`}} 
-          key={index} 
-          onClick={() => dispatch({ type:'CROSS_NAME', index })}>{item.name}</h3>
-        })
-        }
-      </form>
-        {
-          alert.show && <Modal content={alert.content} />
-        }
-    </>
+return (
+  <>
+    <form onSubmit={handleSubmit}>
+    <input name='name' value={name} onChange={(e) => setName(e.target.value)}></input>
+    <button >ADD</button>
+  </form>
+  <div style={{ width: '600px', margin: 'auto' }}>
+    {
+    state.people.map( (item, index) => {
+    return (
+      <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h1
+        style={{ textDecoration: `${item.toggle? 'line-through' : ''}` }} 
+        onClick={() => dispatch({ type: 'CROSS_OFF', payload: index })}>{item.name}</h1>
+        <button onClick={() => dispatch({ type: 'DELETE', payload: index })}>DELETE</button>
+      </div>
     )
+  })
+  }
+  </div>
+  
+  </>
+)
 }
 export default App
